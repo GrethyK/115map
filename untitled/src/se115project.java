@@ -166,7 +166,7 @@ public class se115project {
     public static void main(String[] args) {
 
         if (args.length != 1) {
-            System.out.println("Usage: java Main <input-file>");
+            System.out.println("Usage: java se115project <input-file>");
             return;
         }
 
@@ -175,8 +175,8 @@ public class se115project {
 
         try {
             outputFile = System.getProperty("user.home") + "/Desktop/output.txt";
-            File desktopDir = new File(System.getProperty("user.home") + "/Desktop");
-            if (!desktopDir.exists()) {
+            File directory = new File(System.getProperty("user.home") + "/Desktop");
+            if (!directory.exists()) {
                 throw new IOException("Desktop directory does not exist.");
             }
         } catch (Exception e) {
@@ -188,30 +188,69 @@ public class se115project {
             FileReader fr = new FileReader(inputFile);
             Scanner scanner = new Scanner(fr);
 
-            int numberOfCities = Integer.parseInt(scanner.nextLine().trim());
-            String[] cityLabels = scanner.nextLine().trim().split("\\s+");
-            int numberOfRoads = Integer.parseInt(scanner.nextLine().trim());
+            int lineNumber = 0;
+            boolean fileValid = true;
 
-            CountryMap countryMap = new CountryMap(numberOfCities);
+            int CityAmount;
+            String[] cityLabels;
+            int amountofRoads;
 
-            for (String cityLabel : cityLabels) {
-                countryMap.addCity(cityLabel);
+            try {
+                lineNumber++;
+                CityAmount = Integer.parseInt(scanner.nextLine().trim());
+
+                lineNumber++;
+                cityLabels = scanner.nextLine().trim().split("\\s+");
+                if (cityLabels.length != CityAmount) {
+                    throw new IllegalArgumentException("Number of cities does not match the labels provided.");
+                }
+
+                lineNumber++;
+                amountofRoads = Integer.parseInt(scanner.nextLine().trim());
+
+                CountryMap countryMap = new CountryMap(CityAmount);
+
+                for (String cityLabel : cityLabels) {
+                    countryMap.addCity(cityLabel);
+                }
+
+                for (int i = 0; i < amountofRoads; i++) {
+                    lineNumber++;
+                    String[] roadData = scanner.nextLine().trim().split("\\s+");
+                    if (roadData.length != 3) {
+                        throw new IllegalArgumentException("Invalid road data format. Expected: <city1> <city2> <time>");
+                    }
+
+                    try {
+                        countryMap.addRoad(roadData[0], roadData[1], Integer.parseInt(roadData[2]));
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("Invalid road time. Must be an integer.");
+                    }
+                }
+
+                lineNumber++;
+                String[] startEnd = scanner.nextLine().trim().split("\\s+");
+                if (startEnd.length != 2) {
+                    throw new IllegalArgumentException("Invalid start and end city format. Expected: <start> <end>");
+                }
+
+                int[] path = countryMap.shortestPath(startEnd[0], startEnd[1]);
+                int totalTime = countryMap.calculateTotalTime(path);
+
+                countryMap.writeOutputToFile(path, totalTime, outputFile);
+                System.out.println("File read is successful!");
+                System.out.println("Output written to " + outputFile);
+
+            } catch (Exception e) {
+                fileValid = false;
+                System.out.println("Error Line: " + lineNumber + " " + e.getMessage());
             }
-
-            for (int i = 0; i < numberOfRoads; i++) {
-                String[] roadData = scanner.nextLine().trim().split("\\s+");
-                countryMap.addRoad(roadData[0], roadData[1], Integer.parseInt(roadData[2]));
-            }
-
-            String[] startEnd = scanner.nextLine().trim().split("\\s+");
-
-            int[] path = countryMap.shortestPath(startEnd[0], startEnd[1]);
-            int totalTime = countryMap.calculateTotalTime(path);
-
-            countryMap.writeOutputToFile(path, totalTime, outputFile);
-            System.out.println("Output written to " + outputFile);
 
             scanner.close();
+
+            if (!fileValid) {
+                System.out.println("The input file contains errors. Please correct them and try again.");
+            }
 
         } catch (IOException e) {
             System.err.println("Error reading the input file: " + e.getMessage());
