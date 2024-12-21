@@ -32,8 +32,8 @@ class CountryMap {
     }
 
     public void addRoad(String from, String to, int time) {
-        int fromCity = findCityIndex(from);
-        int toCity = findCityIndex(to);
+        int fromCity = citychecking(from);
+        int toCity = citychecking(to);
 
         if (fromCity != -1 && toCity != -1) {
             roads[fromCity][toCity] = time;
@@ -41,7 +41,7 @@ class CountryMap {
         }
     }
 
-    private int findCityIndex(String cityName) {
+    private int citychecking(String cityName) {
         for (int i = 0; i < cityCount; i++) {
             if (cities[i].name.equals(cityName)) {
                 return i;
@@ -51,8 +51,8 @@ class CountryMap {
     }
 
     public int[] shortestPath(String start, String end) {
-        int startCity = findCityIndex(start);
-        int endCity = findCityIndex(end);
+        int startCity = citychecking(start);
+        int endCity = citychecking(end);
 
         if (startCity == -1 || endCity == -1) {
             throw new IllegalArgumentException("Start or end city not found.");
@@ -80,15 +80,17 @@ class CountryMap {
                 }
             }
 
-            if (currentCity == -1) break;
+            if (currentCity == -1){
+                break;
+            }
 
             visited[currentCity] = true;
 
             for (int k = 0; k < cityCount; k++) {
                 if (roads[currentCity][k] != -1 && !visited[k]) {
-                    int newDist = distances[currentCity] + roads[currentCity][k];
-                    if (newDist < distances[k]) {
-                        distances[k] = newDist;
+                    int newDistance = distances[currentCity] + roads[currentCity][k];
+                    if (newDistance < distances[k]) {
+                        distances[k] = newDistance;
                         previous[k] = currentCity;
                     }
                 }
@@ -105,17 +107,17 @@ class CountryMap {
 
     private int[] recreatePath(int[] previous, int endIndex) {
         int[] path = new int[cityCount];
-        int pathIndex = 0;
+        int pathindex = 0;
 
 
         for (int at = endIndex; at != -1; at = previous[at]) {
-            path[pathIndex++] = at;
+            path[pathindex++] = at;
         }
 
 
-        int[] finalPath = new int[pathIndex];
-        for (int i = 0; i < pathIndex; i++) {
-            finalPath[i] = path[pathIndex - 1 - i];
+        int[] finalPath = new int[pathindex];
+        for (int i = 0; i < pathindex; i++) {
+            finalPath[i] = path[pathindex - 1 - i];
         }
         return finalPath;
     }
@@ -158,7 +160,8 @@ class CountryMap {
         printWriter.println(cities[path[path.length - 1]].name);
 
 
-        printWriter.println("\nTotal time: " + totalTime);
+        printWriter.println();
+        printWriter.println("Total time: " + totalTime);
         printWriter.close();
     }
 }
@@ -166,7 +169,7 @@ public class se115project {
     public static void main(String[] args) {
 
         if (args.length != 1) {
-            System.out.println("Usage: java se115project <input-file>");
+            System.out.println("Usage: java se115project inputsample.txt ");
             return;
         }
 
@@ -177,11 +180,11 @@ public class se115project {
             outputFile = System.getProperty("user.home") + "/Desktop/output.txt";
             File directory = new File(System.getProperty("user.home") + "/Desktop");
             if (!directory.exists()) {
-                throw new IOException("Desktop directory does not exist.");
+                throw new IOException("Desktop directory doesn't exist.");
             }
         } catch (Exception e) {
             outputFile = "output.txt";
-            System.err.println("Could not access Desktop directory. Using local output.txt instead.");
+            System.err.println("Couldn't access Desktop directory. Using local output.txt .");
         }
 
         try {
@@ -210,36 +213,36 @@ public class se115project {
 
                 CountryMap countryMap = new CountryMap(CityAmount);
 
-                for (String cityLabel : cityLabels) {
-                    countryMap.addCity(cityLabel);
+                for (String i : cityLabels) {
+                    countryMap.addCity(i);
                 }
 
                 for (int i = 0; i < amountofRoads; i++) {
                     lineNumber++;
                     String[] roadData = scanner.nextLine().trim().split("\\s+");
                     if (roadData.length != 3) {
-                        throw new IllegalArgumentException("Invalid road data format. Expected: <city1> <city2> <time>");
+                        throw new IllegalArgumentException("Wrong road data format. Expected: <city1> <city2> <time>");
                     }
 
                     try {
                         countryMap.addRoad(roadData[0], roadData[1], Integer.parseInt(roadData[2]));
                     } catch (NumberFormatException e) {
-                        throw new IllegalArgumentException("Invalid road time. Must be an integer.");
+                        throw new IllegalArgumentException("Wrong road time. Must be an integer.");
                     }
                 }
 
                 lineNumber++;
                 String[] startEnd = scanner.nextLine().trim().split("\\s+");
                 if (startEnd.length != 2) {
-                    throw new IllegalArgumentException("Invalid start and end city format. Expected: <start> <end>");
+                    throw new IllegalArgumentException("Wrong start and end city format. Expected: <start> <end>");
                 }
 
                 int[] path = countryMap.shortestPath(startEnd[0], startEnd[1]);
                 int totalTime = countryMap.calculateTotalTime(path);
 
                 countryMap.writeOutputToFile(path, totalTime, outputFile);
-                System.out.println("File read is successful!");
-                System.out.println("Output written to " + outputFile);
+                System.out.println("File read has successfully completed!");
+                System.out.println("Output written to -> " + outputFile);
 
             } catch (Exception e) {
                 fileValid = false;
@@ -249,7 +252,7 @@ public class se115project {
             scanner.close();
 
             if (!fileValid) {
-                System.out.println("The input file contains errors. Please correct them and try again.");
+                System.out.println("The input file has errors. Please fix them and try again.");
             }
 
         } catch (IOException e) {
